@@ -296,6 +296,14 @@ BEGIN
 END; 
 /
 
+CREATE OR REPLACE TRIGGER fire_attempt
+INSTEAD OF DELETE ON all_emps
+FOR EACH ROW
+BEGIN
+DELETE FROM EMPLOYEE WHERE EMPLOYEE_ID = :old.emp_id;
+END;
+/
+
 CREATE OR REPLACE TRIGGER new_loan 
 BEFORE INSERT ON LOAN
 FOR EACH ROW
@@ -386,7 +394,21 @@ END calc_salary_exp;
 CREATE OR REPLACE PROCEDURE hire (position in varchar2, salary in number, hiredate in date, first in varchar2, last in varchar2, social in char) IS
 BEGIN
     INSERT INTO all_emps(position, sal, hire_date, f_name, l_name, ssn) VALUES (position, salary, hiredate, first, last, social);
+    COMMIT;
 END hire;
+/
+
+CREATE OR REPLACE PROCEDURE fire (emp in number, test out number) IS
+BEGIN
+    SELECT count(emp_id) into test from all_emps where emp_id = emp;
+    IF  test > 0 THEN
+        DELETE FROM all_emps WHERE emp_id = emp;
+        COMMIT;
+        test := 1;
+    ELSE
+        test := 0;
+    END IF;
+END fire;
 /
 
 CREATE OR REPLACE PROCEDURE emp_net_sal(emp_id in NUMBER, netyearly out NUMBER, netmonthly out NUMBER) IS
