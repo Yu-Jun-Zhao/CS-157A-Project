@@ -13,51 +13,9 @@ import java.sql.CallableStatement;
 
 import oracle.jdbc.OracleTypes;
 
-/*
- * The backend of this application uses JDBC to connect to the local database (oracle 11g).
- * 
- * author: Grant Clegg, Monty Saengsavang, Yu Jun Zhao
- */
-
-
 public class EmployeeFunctions {
+
 	
-	public static Data viewEmployeeInfo(String query, String[] requestAttrOrder){
-		Data data = new Data();
-		Connection con = null;
-		try {
-			Class.forName("oracle.jdbc.driver.OracleDriver");
-			
-			con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","Client","password");
-			
-			PreparedStatement oPrStmt = con
-					.prepareStatement(query);					
-		
-			ResultSet rs = oPrStmt.executeQuery(); 
-			
-			while(rs.next()) { 
-				
-				String[] storedArr = new String[requestAttrOrder.length];
-								
-				for(int i = 0; i < requestAttrOrder.length; i++){
-					storedArr[i] = getStringValue(rs, requestAttrOrder[i]);
-				}
-				data.dataValues.add(storedArr);
-			}
-	
-		} catch (Exception e) {
-			System.out.println(e);
-		} finally{
-			try {
-				if(con != null){
-					con.close();
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		return data;
-	}
 	
 	public static Data getNetSalary(JFrame jf, String empid, String conempid) {
 		if(!empid.equals(conempid)) {
@@ -73,11 +31,10 @@ public class EmployeeFunctions {
 		}
 		
 		Data data = new Data();
-		Connection con = null;
 		try {
 			Class.forName("oracle.jdbc.driver.OracleDriver");
 			
-			con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","Client","password");
+			Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","Client","password");
 			
 			CallableStatement cStmt = con
 					.prepareCall("{CALL emp_net_sal(?,?,?)}");				
@@ -93,7 +50,7 @@ public class EmployeeFunctions {
 			data.yearly = cStmt.getDouble(2);
 			data.monthly = cStmt.getDouble(3);	
 		
-			
+			con.close();
 			
 		} catch (SQLException e) {
 			
@@ -101,60 +58,10 @@ public class EmployeeFunctions {
 			JOptionPane.showMessageDialog(jf, notice);
 		} catch (ClassNotFoundException e) {
 			System.out.println(e);
-		} finally{
-			try {
-				if(con != null){
-					con.close();
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
+		} 
 	
 		return data;
 	}
-	
-	public static Data calcSalExpense(JFrame jf) {
-		Data data = new Data();
-		Connection con = null;
-		try {
-			Class.forName("oracle.jdbc.driver.OracleDriver");
-			
-			con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","Client","password");
-		
-			CallableStatement cStmt = con
-					.prepareCall("{CALL calc_salary_exp(?,?)}");				
-		
-		
-			cStmt.registerOutParameter(1, OracleTypes.NUMBER);
-			cStmt.registerOutParameter(2, OracleTypes.NUMBER);
-			
-			cStmt.execute();
-		
-			double yearly = cStmt.getDouble(1);
-			double monthly = cStmt.getDouble(2);
-			
-			data.yearly = yearly;
-			data.monthly = monthly;
-				
-			
-			con.close();
-		} catch (Exception e) {
-			System.out.println(e);
-		} finally{
-			try {
-				if(con != null){
-					con.close();
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-	
-		return data;
-	}
-	
-	
 	public static boolean hire(JFrame jf, String firstname, String lastname, String ssn, String conssn, String salary, String job, String startdate) {
 		if(firstname.length() > 15 || lastname.length() > 15 || salary.length() > 15) {
 			JOptionPane.showMessageDialog(jf, "First and Last names must both be under 15 characers!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -181,12 +88,11 @@ public class EmployeeFunctions {
 			return false;
 		}
 		boolean status = false;
-		Connection con = null;
 		try {
 			Class.forName("oracle.jdbc.driver.OracleDriver");
 			
 			//getting connection from the mysql database
-			con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","Client","password");
+			Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","Client","password");
 
 			con.setAutoCommit(false);
 			CallableStatement cStmt = con
@@ -213,25 +119,17 @@ public class EmployeeFunctions {
 			String notice = data.firstName.get(0) + " " + data.lastName.get(0) + " has been successfully hired";
 			JOptionPane.showMessageDialog(jf, notice);
 			
+
+			con.close();
 		} catch (Exception e) {
 			System.out.println(e);
-		} finally{
-			try {
-				if(con != null){
-					con.close();
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
+		} 
 	
 		return status;
 		
 	}
 	
 	public static boolean fire(JFrame jf, String empid, String conempid) {
-		Connection con = null;
-
 		if(!empid.equals(conempid)) {
 			JOptionPane.showMessageDialog(jf, "Employee IDs do not match!", "Error", JOptionPane.ERROR_MESSAGE);
 			return false;
@@ -248,19 +146,23 @@ public class EmployeeFunctions {
 		try {
 			Class.forName("oracle.jdbc.driver.OracleDriver");
 			
-			con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","Client","password");
+			Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","Client","password");
 			
 
 			con.setAutoCommit(false);
-			PreparedStatement oPrStmt = con
-					.prepareStatement("DELETE FROM EMPLOYEE WHERE employee_id=?");					
+			double test = 0;
+			CallableStatement cStmt = con
+					.prepareCall("{CALL fire(?,?)}");
 			
 		
-			oPrStmt.setInt(1, Integer.parseInt(empid));
+			cStmt.setDouble(1, Integer.parseInt(empid));
+			cStmt.registerOutParameter(2, OracleTypes.NUMBER);
+			
 
-			int nUpdatedRecords = oPrStmt.executeUpdate(); 
+			cStmt.execute();; 
+			test = cStmt.getDouble(2);
 			con.commit();
-			if(nUpdatedRecords>0){ 
+			if(test > 0){ 
 				status = true;
 				
 				Data data = new Data();
@@ -274,25 +176,195 @@ public class EmployeeFunctions {
 				JOptionPane.showMessageDialog(jf, notice);
 			}
 	
-			
+			con.close();
 		} catch (Exception e) {
 			System.out.println(e);
-		} finally{
-			try {
-				if(con != null){
-					con.close();
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
+		} 
 	
 		return status;
 	}
 	
+	public static Data calcSalExpense(JFrame jf) {
+		Data data = new Data();
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			
+			Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","Client","password");
+		
+			CallableStatement cStmt = con
+					.prepareCall("{CALL calc_salary_exp(?,?)}");				
+		
+		
+			cStmt.registerOutParameter(1, OracleTypes.NUMBER);
+			cStmt.registerOutParameter(2, OracleTypes.NUMBER);
+			
+			cStmt.execute();
+		
+			double yearly = cStmt.getDouble(1);
+			double monthly = cStmt.getDouble(2);
+			
+			data.yearly = yearly;
+			data.monthly = monthly;
+				
+			
+			con.close();
+		} catch (Exception e) {
+			System.out.println(e);
+		} 
+	
+		return data;
+	}
 	
 	
 	//--------------------------------------
+	
+	public static Data empsWBelowAvgSal(JFrame jf, String[] requestAttrOrder) {
+		Data data = new Data();
+		if(requestAttrOrder.length == 4){
+			try {
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				
+				Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","Client","password");
+				
+				PreparedStatement oPrStmt = con
+						.prepareStatement("Select * FROM emps_with_below_avg_sal");					
+			
+				ResultSet rs = oPrStmt.executeQuery(); 
+				
+				while(rs.next()) { 
+					
+					String[] storedArr = new String[requestAttrOrder.length];
+					storedArr[0] = getStringValue(rs, requestAttrOrder[0]);
+					storedArr[1] = getStringValue(rs, requestAttrOrder[1]);
+					storedArr[2] = getStringValue(rs, requestAttrOrder[2]);
+					storedArr[3] = getStringValue(rs, requestAttrOrder[3]);
+					data.dataValues.add(storedArr);
+					
+					
+				}
+		
+				con.close();
+			} catch (Exception e) {
+				System.out.println(e);
+			}
+		
+		}
+	
+		return data;
+	}
+	
+	public static Data empsWAboveAvgSal(JFrame jf, String[] requestAttrOrder) {
+		Data data = new Data();
+		if(requestAttrOrder.length == 4){
+
+			try {
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				
+				Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","Client","password");
+			
+				PreparedStatement oPrStmt = con
+						.prepareStatement("Select * FROM emps_with_above_avg_sal");					
+			
+				ResultSet rs = oPrStmt.executeQuery(); 
+				
+				while(rs.next()) { 
+					
+					String[] storedArr = new String[requestAttrOrder.length];
+					storedArr[0] = getStringValue(rs, requestAttrOrder[0]);
+					storedArr[1] = getStringValue(rs, requestAttrOrder[1]);
+					storedArr[2] = getStringValue(rs, requestAttrOrder[2]);
+					storedArr[3] = getStringValue(rs, requestAttrOrder[3]);
+					data.dataValues.add(storedArr);
+					
+				}
+		
+				con.close();
+			} catch (Exception e) {
+				System.out.println(e);
+			} 
+		
+		}
+	
+		return data;
+	}
+	
+	public static Data empsWAccts(JFrame jf, String[] requestAttrOrder) {
+		Data data = new Data();
+		Connection con = null;
+		if(requestAttrOrder.length == 3){
+			try {
+				
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","Client","password");
+				
+
+				PreparedStatement oPrStmt = con
+						.prepareStatement("SELECT * FROM emps_with_accts");					
+			
+				ResultSet rs = oPrStmt.executeQuery(); 
+
+				while(rs.next()) { 
+				
+					String[] storedArr = new String[requestAttrOrder.length];
+					storedArr[0] = getStringValue(rs, requestAttrOrder[0]);
+					storedArr[1] = getStringValue(rs, requestAttrOrder[1]);
+					storedArr[2] = getStringValue(rs, requestAttrOrder[2]);
+					data.dataValues.add(storedArr);
+					
+				}
+		
+			
+			} catch (Exception e) {
+				System.out.println(e);
+				
+			} finally{
+				try {
+					if(con != null)
+						con.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return data;
+	}
+	
+	public static Data viewAllEmps(JFrame jf, String[] requestAttrOrder) {
+		Data data = new Data();
+
+		try{
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+
+			Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","Client","password");
+
+
+			PreparedStatement oPrStmt = con
+						.prepareStatement("Select * FROM all_emps");					
+			
+				ResultSet rs = oPrStmt.executeQuery(); 
+				
+				while(rs.next()) { 
+
+					String[] storedArr = new String[requestAttrOrder.length];
+					storedArr[0] = getStringValue(rs, requestAttrOrder[0]);
+					storedArr[1] = getStringValue(rs, requestAttrOrder[1]);
+					storedArr[2] = getStringValue(rs, requestAttrOrder[2]);
+					storedArr[3] = getStringValue(rs, requestAttrOrder[3]);
+					storedArr[4] = getStringValue(rs, requestAttrOrder[4]);
+					storedArr[5] = getStringValue(rs, requestAttrOrder[5]);
+					storedArr[6] = getStringValue(rs, requestAttrOrder[6]);
+					data.dataValues.add(storedArr);
+					
+					
+				}
+		
+				con.close();
+			} catch (Exception e) {
+				System.out.println(e);
+			}
+		return data;
+
+	}
 	
 	public static String getStringValue(ResultSet rs, String attr) throws SQLException{
 		String str = "";

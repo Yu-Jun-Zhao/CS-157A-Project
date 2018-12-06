@@ -17,12 +17,6 @@ import java.util.stream.IntStream;
 
 import backend.Data;
 
-/*
- *  The main GUI of this application.
- *  A panel that display all the employee information
- *  
- *  author: Grant Clegg, Monty Saengsavang, Yu Jun Zhao
- */
 
 public class EmployeePanel extends JPanel {
 	
@@ -97,7 +91,7 @@ public class EmployeePanel extends JPanel {
 										StaticVar.SALARY,
 										StaticVar.HDATE};
 					
-					Data data = EmployeeFunctions.viewEmployeeInfo(StaticVar.VIEWALL, dataOrder);
+					Data data = EmployeeFunctions.viewAllEmps(jf,dataOrder);
 					table.setModel(new CustomTableModel(colN, data.dataValues));
 					
 				});
@@ -113,7 +107,7 @@ public class EmployeePanel extends JPanel {
 								StaticVar.LAST_NAME, 
 								StaticVar.EMPLOYEEE_ID};
 			
-					Data data = EmployeeFunctions.viewEmployeeInfo(StaticVar.VIEWACC, dataOrder);
+					Data data = EmployeeFunctions.empsWAccts(jf,dataOrder);
 					table.setModel(new CustomTableModel(colN, data.dataValues));
 				});
 				
@@ -129,7 +123,7 @@ public class EmployeePanel extends JPanel {
 								StaticVar.EMPLOYEEE_ID,
 								StaticVar.SALARY};
 			
-					Data data = EmployeeFunctions.viewEmployeeInfo(StaticVar.ABOVEAVG, dataOrder);
+					Data data = EmployeeFunctions.empsWAboveAvgSal(jf,dataOrder);
 					table.setModel(new CustomTableModel(colN, data.dataValues));
 				});
 				
@@ -145,7 +139,7 @@ public class EmployeePanel extends JPanel {
 								StaticVar.EMPLOYEEE_ID,
 								StaticVar.SALARY};
 			
-					Data data = EmployeeFunctions.viewEmployeeInfo(StaticVar.BELOWAVG, dataOrder);
+					Data data = EmployeeFunctions.empsWBelowAvgSal(jf,dataOrder);
 					table.setModel(new CustomTableModel(colN, data.dataValues));
 				});
 				
