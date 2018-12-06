@@ -17,6 +17,12 @@ import java.util.stream.IntStream;
 
 import backend.Data;
 
+/*
+ *  The main GUI of this application.
+ *  A panel that display all the employee information
+ *  
+ *  author: Grant Clegg, Monty Saengsavang, Yu Jun Zhao
+ */
 
 public class EmployeePanel extends JPanel {
 	
@@ -67,13 +73,13 @@ public class EmployeePanel extends JPanel {
 				panel.setLayout(bl);
 				
 				// Create Label
-				JLabel label = new JLabel("Employess With Accounts", JLabel.CENTER);
+				JLabel label = new JLabel("Employee Information", JLabel.CENTER);
 				label.setAlignmentX(Component.CENTER_ALIGNMENT);
 				label.setFont(StaticVar.MENUFONT);
 				
 				// Create radio buttons
 				ButtonGroup buttonGroup = new ButtonGroup();
-				JRadioButton allEmpAcc = new JRadioButton("All Accounts");
+				JRadioButton allEmpAcc = new JRadioButton("All Employees");
 				allEmpAcc.addActionListener(x -> {
 					String[] colN = {"First Name",
 							 		"Last Name",
@@ -91,7 +97,7 @@ public class EmployeePanel extends JPanel {
 										StaticVar.SALARY,
 										StaticVar.HDATE};
 					
-					Data data = EmployeeFunctions.viewAllEmps(jf,dataOrder);
+					Data data = EmployeeFunctions.viewEmployeeInfo(StaticVar.VIEWALL, dataOrder);
 					table.setModel(new CustomTableModel(colN, data.dataValues));
 					
 				});
@@ -107,7 +113,7 @@ public class EmployeePanel extends JPanel {
 								StaticVar.LAST_NAME, 
 								StaticVar.EMPLOYEEE_ID};
 			
-					Data data = EmployeeFunctions.empsWAccts(jf,dataOrder);
+					Data data = EmployeeFunctions.viewEmployeeInfo(StaticVar.VIEWACC, dataOrder);
 					table.setModel(new CustomTableModel(colN, data.dataValues));
 				});
 				
@@ -123,7 +129,7 @@ public class EmployeePanel extends JPanel {
 								StaticVar.EMPLOYEEE_ID,
 								StaticVar.SALARY};
 			
-					Data data = EmployeeFunctions.empsWAboveAvgSal(jf,dataOrder);
+					Data data = EmployeeFunctions.viewEmployeeInfo(StaticVar.ABOVEAVG, dataOrder);
 					table.setModel(new CustomTableModel(colN, data.dataValues));
 				});
 				
@@ -139,7 +145,7 @@ public class EmployeePanel extends JPanel {
 								StaticVar.EMPLOYEEE_ID,
 								StaticVar.SALARY};
 			
-					Data data = EmployeeFunctions.empsWBelowAvgSal(jf,dataOrder);
+					Data data = EmployeeFunctions.viewEmployeeInfo(StaticVar.BELOWAVG, dataOrder);
 					table.setModel(new CustomTableModel(colN, data.dataValues));
 				});
 				
@@ -220,7 +226,12 @@ public class EmployeePanel extends JPanel {
 				
 				jf.setSize(StaticVar.WINDIMENSION.width/4, StaticVar.WINDIMENSION.height/4);
 				jf.setLocationRelativeTo(null);
-				jf.setVisible(true);
+				if(yearly != 0) {
+					jf.setVisible(true);
+				}
+				else {
+					jf.dispose();
+				}
 			}
 		});
 
